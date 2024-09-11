@@ -11,6 +11,34 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)  
 
+@app.route('/upload', methods=['POST'])  
+def upload():  
+    # 从 POST 请求中获取图像文件  
+    if 'file' not in request.files:  
+        return jsonify({"error": "No file part!"}), 400  
+
+    file = request.files['file']  
+
+    if file.filename == '':  
+        return jsonify({"error": "No selected file!"}), 400  
+
+    try:  
+        # 读取图像文件并进行处理
+        img_array = np.frombuffer(file.read(), np.uint8)  
+        img_bgr = cv2.imdecode(img_array, cv2.IMREAD_COLOR)  
+
+        # 处理图像并返回识别结果
+        resize_rates = (1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4)  
+        for resize_rate in resize_rates:  
+            result, roi, color = predictor.predict(img_bgr, resize_rate)  
+            if result:  
+                break  
+
+        return jsonify({"result": result, "roi": roi.tolist(), "color": color}), 200  
+    except Exception as e:  
+        return jsonify({"error": str(e)}), 500  
+
+
 @app.route('/upload_url', methods=['POST'])  
 def upload_url():  
     # 从 POST 请求中获取 URL  
