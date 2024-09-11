@@ -1,12 +1,12 @@
 import tkinter as tk  
+from tkinter.filedialog import *  
 from tkinter import ttk  
 import predict  
 import cv2  
 from PIL import Image, ImageTk  
 import threading  
 import time  
-import requests  
-import numpy as np  
+
 
 class Surface(ttk.Frame):  
     pic_path = ""  
@@ -25,7 +25,6 @@ class Surface(ttk.Frame):
     # 初始化  
     def __init__(self, win):  
         ttk.Frame.__init__(self, win)  
-        
         img_area = ttk.Frame(self)  
         analysis_img_info = ttk.Frame(self)  
         analysis_res_data = ttk.Frame(self)  
@@ -60,6 +59,17 @@ class Surface(ttk.Frame):
             font=('Arial', 16),  
         ).grid(column=0, row=0, sticky=tk.W)  
 
+        from_pic_ctl = tk.Button(  
+            analysis_res_data,  
+            text="选择图片",  
+            width=20,  
+            height=2,  
+            activebackground="#fff",  
+            activeforeground="#0088FF",  
+            font=('Arial', 16),  
+            bg="#fff",  
+            command=self.from_pic  
+        )  
         self.image_ctl = ttk.Label(img_area)  
         self.image_ctl.pack(anchor="nw")  
 
@@ -86,48 +96,9 @@ class Surface(ttk.Frame):
             width="20",  
         )  
         self.color_ctl.grid(column=0, row=16, sticky=tk.W)  
-        
-        from_pic_ctl = tk.Button(  
-            analysis_res_data,  
-            text="选择图片",  
-            width=20,  
-            height=2,  
-            activebackground="#fff",  
-            activeforeground="#0088FF",  
-            font=('Arial', 16),  
-            bg="#fff",  
-            command=self.from_pic  
-        )  
         from_pic_ctl.pack(anchor="se", pady="5")  
-        
         self.predictor = predict.CardPredictor()  
         self.predictor.train_svm()  
-
-        # 自动加载图片  
-        self.load_image_from_url("https://res.by56.com/upload/Upload/News/2022/792de51e-1374-44b8-bf56-639b6bb88acc.jpg")  
-
-    # 方法：从URL加载图片  
-    def load_image_from_url(self, url):  
-        try:  
-            response = requests.get(url, timeout=10)  
-            response.raise_for_status()  
-            
-            img_array = np.asarray(bytearray(response.content), dtype=np.uint8)  
-            img_bgr = cv2.imdecode(img_array, cv2.IMREAD_COLOR)  
-            
-            self.imgtk = self.get_imgtk(img_bgr)  
-            self.image_ctl.configure(image=self.imgtk)  
-            
-            resize_rates = (1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4)  
-            for resize_rate in resize_rates:  
-                print("resize_rate:", resize_rate)  
-                r, roi, color = self.predictor.predict(img_bgr, resize_rate)  
-                if r:  
-                    break  
-            self.show_roi(r, roi, color)  
-        
-        except requests.exceptions.RequestException as e:  
-            print(f"加载图片失败: {e}")  
 
     # 图片展示  
     def get_imgtk(self, img_bgr):  
@@ -145,7 +116,7 @@ class Surface(ttk.Frame):
             if wide <= 0: wide = 1  
             high = int(high * factor)  
             if high <= 0: high = 1  
-            im = im.resize((wide, high), Image.LANCZOS)  
+            im = im.resize((wide, high), Image.LANCZOS)  # 使用 LANCZOS 代替 ANTIALIAS  
             imgtk = ImageTk.PhotoImage(image=im)  
         return imgtk  
 
