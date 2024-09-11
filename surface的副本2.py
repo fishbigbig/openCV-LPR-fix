@@ -103,8 +103,9 @@ class Surface(ttk.Frame):
         self.predictor = predict.CardPredictor()  
         self.predictor.train_svm()  
 
-        # 自动加载图片  
-        self.load_image_from_url("https://res.by56.com/upload/Upload/News/2022/792de51e-1374-44b8-bf56-639b6bb88acc.jpg")  
+        # 自动加载图片
+        image_url = "https://res.by56.com/upload/Upload/News/2022/792de51e-1374-44b8-bf56-639b6bb88acc.jpg"
+        self.load_image_from_url(image_url)
 
     # 方法：从URL加载图片  
     def load_image_from_url(self, url):  
@@ -116,6 +117,7 @@ class Surface(ttk.Frame):
             img_bgr = cv2.imdecode(img_array, cv2.IMREAD_COLOR)  
             
             self.imgtk = self.get_imgtk(img_bgr)  
+            #通过 configure 方法更新 image_ctl 控件的图像，以显示刚刚加载的图像
             self.image_ctl.configure(image=self.imgtk)  
             
             resize_rates = (1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4)  
