@@ -7,7 +7,7 @@ from tensorflow.keras.models import load_model
 
 MODEL_PATH = 'mobilenetv2.h5'  
 IMAGE_SIZE = (224, 224)  
-LABELS = ['cat', 'dog', 'other']  
+LABELS = ['cat', 'dog']  
 
 # 加载预训练的模型  
 try:  
@@ -15,6 +15,7 @@ try:
     print("模型加载成功！")  
 except Exception as e:  
     print(f"加载模型时出错: {e}")  
+    exit()  # 如果模型加载失败，退出程序
 
 def preprocess_image(image_path):  
     """预处理图像以适应模型输入"""  
@@ -46,16 +47,18 @@ def identify_image():
             predictions = model.predict(img)  
             print("Predictions:", predictions)  # 打印预测结果  
             class_index = np.argmax(predictions[0])  
-            print("Class index:", class_index)  # 打印类索引  
+            print("Class index:", class_index)  # 打印类索引
             
             # 确保 class_index 在 LABELS 范围内  
             if class_index < len(LABELS):  
                 label = LABELS[class_index]  
+                confidence = predictions[0][class_index]  # 获取置信度  
             else:  
                 label = "未知类别"  
+                confidence = 0.0  # 未知类别置信度设为0  
 
             show_image(file_path)  
-            result_label.config(text=f"识别到的动物: {label}")  # 显示识别结果  
+            result_label.config(text=f"识别到的动物: {label} (置信度: {confidence:.2f})")  # 显示识别结果和置信度  
             btn_select.config(state=tk.NORMAL)  
 
 def show_image(image_path):  
