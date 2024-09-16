@@ -44,10 +44,18 @@ def identify_image():
         if img is not None:  
             btn_select.config(state=tk.DISABLED)  
             predictions = model.predict(img)  
+            print("Predictions:", predictions)  # 打印预测结果  
             class_index = np.argmax(predictions[0])  
-            label = LABELS[class_index]  
+            print("Class index:", class_index)  # 打印类索引  
+            
+            # 确保 class_index 在 LABELS 范围内  
+            if class_index < len(LABELS):  
+                label = LABELS[class_index]  
+            else:  
+                label = "未知类别"  
+
             show_image(file_path)  
-            messagebox.showinfo("识别结果", f"识别到的动物: {label}")  
+            result_label.config(text=f"识别到的动物: {label}")  # 显示识别结果  
             btn_select.config(state=tk.NORMAL)  
 
 def show_image(image_path):  
@@ -58,13 +66,25 @@ def show_image(image_path):
     img_label.configure(image=img_tk)  
     img_label.image = img_tk  
 
+# 初始化 tkinter  
 root = tk.Tk()  
 root.title("猫的识别器")  
 
+# 设置窗口大小和自适应  
+root.geometry("500x500")  # 初始大小  
+root.resizable(True, True)  # 允许调整大小  
+
+# 创建选择按钮  
 btn_select = tk.Button(root, text="选择图片", command=identify_image)  
 btn_select.pack(pady=20)  
 
+# 创建识别结果标签  
+result_label = tk.Label(root, text="", font=("Arial", 14))  
+result_label.pack(pady=10)  
+
+# 创建显示图像的标签  
 img_label = tk.Label(root)  
 img_label.pack(pady=20)  
 
+# 启动主循环  
 root.mainloop()
